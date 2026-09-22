@@ -131,6 +131,13 @@
           '.oqBadge:hover,.oqBadge[data-active]{background:var(--dsw-alias-interactive-bg-hover,rgba(0,0,0,.06));color:var(--dsw-alias-label-primary,#1c1e26)}',
           '.oqBadgeCount{position:absolute;top:-2px;right:-2px;display:block;box-sizing:border-box;min-width:15px;height:15px;padding:0 4px;border-radius:999px;background:var(--dsw-alias-button-info-fill,#4165d7);color:#fff;font-size:9.5px;font-weight:600;line-height:15px;text-align:center;font-variant-numeric:tabular-nums}',
           '.oqBadge[data-peak] .oqBadgeCount{background:var(--dsw-alias-state-warn-primary,#e8a23c)}',
+          // Collapsed rail (56px): the shell centres the whole footer-action seat as one
+          // horizontal strip (justify-content:center; width:auto), so a second 36px
+          // registrant makes the strip 78px wide and it hangs 21px past each rail edge.
+          // Every other rail row stacks in the 36px column, so the rail entry drops the
+          // wide-mode leading seam and pins the seat to a column while it is the rail one.
+          '.oqLayer[data-oq-rail="rail"]{margin:0}',
+          '*:has(> [data-slot="sidebar.footer.action"] .oqLayer[data-oq-rail="rail"]){flex-direction:column;align-items:center;gap:4px}',
           // modal (Skill Center overlay + card)
           '.oqOverlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:var(--dsw-alias-bg-mask-2,#080a1073);font-family:system-ui,-apple-system,Segoe UI,sans-serif}',
           '.oqCard{display:flex;flex-direction:column;width:min(780px,92vw);max-height:84vh;overflow:hidden;background:var(--dsw-alias-bg-overlay,#fdfdfd);color:var(--dsw-alias-label-primary,#1c1e26);border-radius:12px;box-shadow:0 18px 60px #00000059}',
@@ -771,6 +778,9 @@
             )
           }
           function SidebarEntry(props) {
+            // The seat passes { wide }: false is the collapsed 56px rail, where the
+            // entry has to match the other rail rows (36px circle, no leading seam).
+            const rail = Boolean(props && props.wide === false)
             const snap = useQueue()
             const open = useModalOpen()
             const count = snap && snap.counts
@@ -778,7 +788,7 @@
               : 0
             const peak = Boolean(snap && snap.sessionPhase === 'peak')
             const label = count > 0 ? 'Off-peak send queue, ' + count + ' waiting' : 'Off-peak send queue'
-            return el('div', { className: 'oqLayer' },
+            return el('div', { className: 'oqLayer', 'data-oq-rail': rail ? 'rail' : undefined },
               el('div', { className: 'oqFooterButtons' },
                 el(Tooltip, { label, side: 'right', delayMs: 400 },
                   el('button', {
